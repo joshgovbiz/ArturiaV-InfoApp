@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Where Arturia's instruments came from</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@112,500;125,700;125,800&family=Newsreader:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #E8EBEF;
+    --surface: #F5F6F8;
+    --ink: #1B2230;
+    --muted: #566073;
+    --line: #C9CFD8;
+    --keys: #1F6F6B;
+    --analog: #3B4A9C;
+    --digital: #7A3E7D;
+    --own: #9A6410;
+    --focus: #1B2230;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #161B24; --surface: #1F2531; --ink: #E7EAF0; --muted: #9AA4B5; --line: #333C4C;
+      --keys: #4FB8B1; --analog: #8C9CF0; --digital: #C58AC8; --own: #E0AA55; --focus: #E7EAF0;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #161B24; --surface: #1F2531; --ink: #E7EAF0; --muted: #9AA4B5; --line: #333C4C;
+    --keys: #4FB8B1; --analog: #8C9CF0; --digital: #C58AC8; --own: #E0AA55; --focus: #E7EAF0;
+  }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: "Newsreader", Georgia, "Times New Roman", serif;
+    font-size: 18px; line-height: 1.6;
+  }
+  .wrap { max-width: 820px; margin: 0 auto; padding: 48px 20px 80px; }
+
+  h1 {
+    font-family: "Archivo", "Helvetica Neue", Arial, sans-serif;
+    font-stretch: 125%; font-weight: 800;
+    font-size: clamp(30px, 6vw, 50px); line-height: 1.05; letter-spacing: -0.01em;
+    margin: 0 0 14px; max-width: 16ch;
+  }
+  .lede { color: var(--muted); margin: 0 0 32px; max-width: 52ch; }
+
+  .controls { display: grid; gap: 14px; margin-bottom: 8px; }
+  .search {
+    width: 100%; font: inherit; font-size: 17px; padding: 12px 14px;
+    background: var(--surface); color: var(--ink);
+    border: 1px solid var(--line); border-radius: 6px;
+  }
+  .search::placeholder { color: var(--muted); }
+  .row-controls { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip, .seg button {
+    font-family: "Archivo", "Helvetica Neue", Arial, sans-serif; font-stretch: 112%; font-weight: 500;
+    font-size: 14px; padding: 7px 13px; border-radius: 999px;
+    border: 1px solid var(--line); background: transparent; color: var(--ink); cursor: pointer;
+  }
+  .chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+  .seg button { border: 0; border-radius: 0; }
+  .seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+  .count { color: var(--muted); font-size: 15px; margin: 18px 0 6px; }
+  :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+  .group-title {
+    font-family: "Archivo", "Helvetica Neue", Arial, sans-serif; font-stretch: 125%; font-weight: 700;
+    font-size: 21px; margin: 36px 0 10px;
+  }
+  .group-note { color: var(--muted); font-size: 15px; margin: -4px 0 10px; }
+
+  .item {
+    background: var(--surface); border: 1px solid var(--line);
+    border-left: 6px solid var(--c); border-radius: 6px; margin-bottom: 10px;
+  }
+  .item[data-cat="keys"] { --c: var(--keys); }
+  .item[data-cat="analog"] { --c: var(--analog); }
+  .item[data-cat="digital"] { --c: var(--digital); }
+  .item[data-cat="own"] { --c: var(--own); }
+
+  .head {
+    all: unset; box-sizing: border-box; display: grid;
+    grid-template-columns: 92px 1fr 20px; gap: 14px; align-items: center;
+    width: 100%; padding: 14px 16px; cursor: pointer;
+  }
+  .head:focus-visible { outline: 3px solid var(--focus); outline-offset: -3px; }
+  .year {
+    font-family: "Archivo", "Helvetica Neue", Arial, sans-serif; font-stretch: 125%; font-weight: 800;
+    font-size: 24px; font-variant-numeric: tabular-nums; color: var(--c); line-height: 1;
+  }
+  .year.small { font-size: 17px; }
+  .name {
+    font-family: "Archivo", "Helvetica Neue", Arial, sans-serif; font-stretch: 125%; font-weight: 700;
+    font-size: 18px; line-height: 1.2; display: block;
+  }
+  .orig { color: var(--muted); font-size: 15.5px; display: block; line-height: 1.35; margin-top: 2px; }
+  .chev { width: 12px; height: 12px; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: rotate(45deg); transition: transform .2s ease; justify-self: end; margin-top: -4px; }
+  .head[aria-expanded="true"] .chev { transform: rotate(-135deg); margin-top: 4px; }
+
+  .body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .25s ease; }
+  .body.open { grid-template-rows: 1fr; }
+  .body > div { overflow: hidden; }
+  .body > div > * { margin-left: 122px; margin-right: 16px; }
+  .body p { margin-top: 0; margin-bottom: 14px; max-width: 64ch; }
+  .fig { margin-top: 4px; margin-bottom: 16px; max-width: 520px; }
+  .fig svg { display: block; width: 100%; height: auto; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; }
+  .fig figcaption { color: var(--muted); font-size: 14px; font-style: italic; margin-top: 6px; }
+  .facts {
+    font-family: "Archivo", "Helvetica Neue", Arial, sans-serif; font-stretch: 112%; font-weight: 500;
+    font-size: 14px; color: var(--muted); border-left: 3px solid var(--c); padding-left: 10px;
+    margin-bottom: 14px; max-width: 64ch;
+  }
+  .heard { font-style: italic; color: var(--muted); }
+  .links { margin-bottom: 18px !important; font-size: 16px; }
+  .links a { color: var(--ink); text-decoration-color: var(--c); text-decoration-thickness: 2px; text-underline-offset: 3px; }
+
+  .empty { padding: 40px 0; color: var(--muted); }
+
+  @media (max-width: 560px) {
+    body { font-size: 17px; }
+    .head { grid-template-columns: 70px 1fr 16px; gap: 10px; padding: 12px; }
+    .year { font-size: 19px; }
+    .year.small { font-size: 14px; }
+    .name { font-size: 16px; }
+    .body > div > * { margin-left: 92px; margin-right: 12px; }
+  }
+  @media (prefers-reduced-motion: reduce) { .body, .chev { transition: none; } }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <h1>Where Arturia's instruments came from</h1>
+  <p class="lede">Most of Arturia's instruments recreate a real one, and a few are Arturia's own designs. Tap any entry for the story of the original, how it sounded and what it was used for. The year is when the original arrived.</p>
+
+  <div class="controls">
+    <input class="search" id="q" type="search" placeholder="Search by name, maker or year" aria-label="Search instruments" autocomplete="off">
+    <div class="row-controls">
+      <div class="chips" id="chips" role="group" aria-label="Filter by group"></div>
+      <div class="seg" id="sort" role="group" aria-label="Sort order">
+        <button type="button" data-sort="type" aria-pressed="true">By group</button>
+        <button type="button" data-sort="year" aria-pressed="false">Oldest first</button>
+      </div>
+    </div>
+  </div>
+  <p class="count" id="count" aria-live="polite"></p>
+  <div id="list"></div>
+</main>
+
+<script>
+const CATS = {
+  keys:    { label: "Keys", note: "Pianos, electric pianos, organs and tape or string keyboards." },
+  analog:  { label: "Analog synths", note: "Monosynths, polysynths, modulars, a bass machine and a vocoder." },
+  digital: { label: "Digital and sampling", note: "FM, phase distortion, wavetable and sampling instruments." },
+  own:     { label: "Arturia's own", note: "Instruments that started with Arturia rather than a vintage original." }
+};
+
+const DATA = [
+  // ---------- KEYS ----------
+  { n:"Piano V", cat:"keys", y:1700, yl:"c. 1700", o:"Acoustic grand and upright pianos", m:"Bartolomeo Cristofori, Florence",
+    a:{t:'grand',b:'#151517'},
+    t:"Around 1700, Bartolomeo Cristofori, keeper of instruments at the Medici court in Florence, built the first piano. He called it a gravicembalo col piano e forte, a harpsichord with soft and loud. A harpsichord plucks its strings at one fixed volume, but his hammer action let a player shape every note by touch. The idea spread slowly at first. In the 1800s iron frames, heavier strings and Sébastien Érard's double-escapement action made pianos louder and far more responsive, and firms such as Steinway & Sons, founded in New York in 1853, and Yamaha, which built its first piano in Japan in 1900, settled the form of the concert grand and the upright.",
+    s:"The acoustic piano has been the foundation of Western keyboard music for three centuries, and its influence runs from Beethoven to modern hip-hop production. Every piano has its own voice, from bright and cutting to round and dark, which is why makers, halls and even individual instruments are talked about the way singers are. For most producers a convincing piano is the first sound they reach for when writing chords." },
+  { n:"CP-70 V", cat:"keys", y:1976, yl:"1976", o:"Yamaha CP-70 electric grand", m:"Yamaha",
+    a:{t:'grand',b:'#1f1f22',small:true},
+    f:"73 keys · real strings and hammers · pickups and onboard tone controls",
+    t:"Electric pianos of the 1970s solved a real stage problem. An acoustic piano is quiet, hard to amplify without feedback and prone to drifting out of tune when it is moved. Yamaha's answer, introduced in 1976, was the CP-70, a compact electric grand that kept real strings and a real hammer action but added pickups and tone controls so it could be plugged into a PA. The CP-80 followed in 1979 with a wider key range.",
+    s:"The sound is clear, bright and slightly percussive. It is closer to an acoustic grand than a Rhodes or a Wurlitzer, but tighter and more focused, which helped it cut through dense band mixes. It was a fixture on touring stages in the late 1970s and 1980s, particularly for pop and rock keyboardists who wanted a piano tone that survived a loud stage." },
+  { n:"Stage-73 V", cat:"keys", y:1970, yl:"1970", o:"Fender Rhodes Stage 73", m:"Harold Rhodes / Fender",
+    a:{t:'kbd',b:'#151515',p:'#b9bdc4',ph:30,w:30},
+    f:"73 keys · steel tines with electromagnetic pickups",
+    t:"Harold Rhodes, a pianist and teacher, began building small keyboards during the Second World War for injured servicemen to play in hospital beds. After the war he refined the idea into an electric piano in which each key swings a hammer against a small tuned steel tine, with an electromagnetic pickup close by, much like an electric guitar's. He worked with Leo Fender's company from the late 1950s, and after CBS bought Fender in 1965 the instrument was sold as the Fender Rhodes. The Stage 73, a 73-key portable model, arrived in 1970 and went on the road with countless bands.",
+    s:"The Rhodes tone is soft and bell-like when played gently and grows a growling bark when played hard, and it has a natural tremolo when run through stereo amps. It defined the sound of jazz fusion and soul in the 1970s, from Herbie Hancock and Chick Corea to Donny Hathaway, and it remains a staple of neo-soul, R&B and hip-hop production." },
+  { n:"Wurli V", cat:"keys", y:1954, yl:"1954", o:"Wurlitzer electric piano (200 series)", m:"Wurlitzer",
+    a:{t:'kbd',b:'#2e2e33',p:'#8a8d94',ph:44,sw:[6,'#d0503a'],w:26},
+    f:"64 keys (200 series) · steel reeds struck by hammers",
+    t:"Wurlitzer, a company best known for jukeboxes and theatre organs, began selling electric pianos in 1954, building on ideas by Benjamin Miessner, who had experimented with electrified pianos in the 1930s. The first models were sold as compact teaching pianos for classrooms and were built to be cheap and tough. The design was refined through the 1960s, and from 1968 the 200 series brought a more modern look. The 200A of 1974 is the version most people picture.",
+    s:"Each key hits a small steel reed, and its vibration is picked up electrostatically. Played softly, a Wurlitzer sounds mellow and woody. Played hard, it barks and distorts, and that character is the whole appeal. You can hear it on records from Ray Charles's What'd I Say to Supertramp's Dreamer." },
+  { n:"Clavinet V", cat:"keys", y:1964, yl:"1964", o:"Hohner Clavinet", m:"Hohner",
+    a:{t:'kbd',b:'#161616',p:'#333338',ph:52,sw:[5,'#e8e2d0'],w:26},
+    f:"60 keys (D6) · strings pressed against a metal anvil",
+    h:"Stevie Wonder's Superstition (1972) made the D6 famous.",
+    t:"Ernst Zacharias, an engineer at the German accordion and harmonica maker Hohner, designed a family of electric keyboards in the 1960s, and the Clavinet was one of them. It is essentially an electric clavichord. Pressing a key drives a small rubber-tipped piece that pins a string against a metal anvil, and pickups like those on a guitar catch the sound. It launched in 1964 as the Clavinet I, and the D6 of 1971, with its bank of tone switches, became the definitive model.",
+    s:"The short, plucked attack and tight decay make the Clavinet ideal for rhythmic playing, and it is inseparable from 1970s funk. It also turns up in disco, reggae and rock, including John Paul Jones's part on Led Zeppelin's Trampled Under Foot. Run through a wah pedal it becomes even more percussive." },
+  { n:"B-3 V", cat:"keys", y:1954, yl:"1954", o:"Hammond B-3 organ", m:"Hammond Organ Company",
+    a:{t:'organ'},
+    f:"Two 61-note manuals · nine drawbars per manual · tonewheel generator",
+    h:"Jimmy Smith made it a lead jazz instrument in the 1950s.",
+    t:"Laurens Hammond built his first tonewheel organ in Chicago in 1935. It made sound electrically by spinning metal tonewheels in front of pickups rather than blowing air through pipes, which made it small and cheap enough for homes and churches. The B-3, introduced in 1954, is the version that became legend: two 61-note keyboards, a pedalboard, nine drawbars per manual for mixing harmonics, plus percussion and vibrato. Don Leslie's rotating speaker cabinet, developed in the 1940s, added the characteristic swirl.",
+    s:"Drawbars let a player build a sound by ear, from a pure flute to a full, growling roar, and switching the Leslie between slow and fast is one of the most recognisable gestures in music. After jazz players adopted it, the B-3 became central to gospel, soul, blues and rock." },
+  { n:"Farfisa V", cat:"keys", y:1964, yl:"1960s", o:"Farfisa combo organs", m:"Farfisa, Italy",
+    a:{t:'kbd',b:'#2b3a67',p:'#d8d2c0',ph:44,sw:[10,'#e6c34a'],w:24,rev:true,legs:true},
+    t:"Farfisa started in 1946 in the Marche region of Italy as an accordion maker. By the early 1960s it was building compact transistor organs for touring bands. They were portable, affordable and far lighter than a Hammond, and many came with a folding stand and rows of coloured tabs for switching voices.",
+    s:"The Farfisa sound is thin, buzzy and slightly nasal, and it cuts through a guitar band. It found its way into 1960s garage rock and psychedelia, and was picked up again by new wave bands later on." },
+  { n:"Vox Continental V", cat:"keys", y:1962, yl:"1962", o:"Vox Continental", m:"Jennings Musical Industries, England",
+    a:{t:'kbd',b:'#1a1a1c',p:'#26262a',ph:44,sw:[9,'#e8e2cf'],w:24,rev:true,legs:true},
+    f:"49 keys · transistor organ",
+    h:"Heard on The Animals' House of the Rising Sun.",
+    t:"Jennings Musical Industries, the English company behind Vox amplifiers, released the Continental in 1962. It was a portable organ built with transistors rather than valves, with a single 49-key manual. Compact and cheap compared with a Hammond, it was far easier to load into a van, which made it a natural choice for touring beat groups in the British Invasion era.",
+    s:"Bright and a little raspy, the Continental has a distinctive sizzle, especially in its upper registers. It became a signature sound of 1960s pop and garage rock and was famously used by The Doors' Ray Manzarek." },
+  { n:"Mellotron V", cat:"keys", y:1963, yl:"1963", o:"Mellotron", m:"Streetly Electronics, Birmingham",
+    a:{t:'mello'},
+    f:"35 keys (M400) · one tape strip per key",
+    h:"The Beatles used it on Strawberry Fields Forever.",
+    t:"The Mellotron's ancestor was the Chamberlin, built in California by Harry Chamberlin from the 1940s: a keyboard where each key played back a length of recorded tape. English brothers Bill, Frank and Norman Bradley of Streetly Electronics in Birmingham developed the idea into the Mellotron, and the first models appeared in 1963. Each key holds a tape strip of a real instrument, such as flute, cello or a choir, recorded note by note, and the tape is pulled back by a spring on release. The M400 of 1970 became the portable workhorse.",
+    s:"The eerie, slightly wobbly tone comes from the tape mechanism. Notes run out after about eight seconds, so players learn to work in phrases. The Beatles put a Mellotron flute at the start of Strawberry Fields Forever, and the instrument became a signature of King Crimson, Genesis and other progressive rock bands." },
+  { n:"Solina V", cat:"keys", y:1974, yl:"1974", o:"Solina String Ensemble", m:"Eminent, Netherlands / ARP",
+    a:{t:'kbd',b:'#2c2c30',c:'#8a5a2e',p:'#c8c3b4',ph:70,sl:[12,'#f0f0f0'],w:26},
+    t:"In the early 1970s the Dutch company Eminent began building string sounds into its organs and then spun the idea off into a dedicated instrument, the Solina String Ensemble. It used divide-down electronics, in which a single high-frequency generator is divided to make every note at once, and it ran the result through an ensemble effect. In the United States it was sold as the ARP String Ensemble from 1974, and it made a polyphonic string sound affordable for the first time.",
+    s:"The wide, slowly shimmering ensemble effect gave a lush string-section sound that sat behind countless 1970s records. It defined the sound of disco strings and the wide pads of soft rock and pop." },
+
+  // ---------- ANALOG ----------
+  { n:"Modular V", cat:"analog", y:1964, yl:"1964", o:"Moog modular synthesizer", m:"R.A. Moog Co., New York",
+    a:{t:'modular'},
+    t:"Robert Moog began building voltage-controlled synthesizer modules in Trumansburg, New York, in the early 1960s, working with musicians such as composer Herb Deutsch. He showed them at the Audio Engineering Society convention in 1964, and orders followed. A Moog modular is built from separate oscillators, filters, envelope generators and amplifiers, connected by patch cables, and voltage controls how each one behaves. Any module can control any other.",
+    s:"Building a sound means patching it by hand, which invites experiment. Wendy Carlos's Switched-On Bach (1968) proved the modular could play convincing music and became a bestselling classical album. The instrument went on to shape progressive rock and film music, from Keith Emerson's stage rig to the score of A Clockwork Orange." },
+  { n:"Mini V", cat:"analog", y:1970, yl:"1970", o:"Minimoog Model D", m:"Moog Music",
+    a:{t:'kbd',b:'#141414',c:'#8a5528',p:'#1b1b1e',ph:76,knobs:[2,12,'#e8e6de'],sw:[6,'#e8e6de'],w:25},
+    f:"44 keys · 3 oscillators · monophonic · 24 dB ladder filter",
+    t:"By the late 1960s Moog's modular systems were expensive and complicated, and Moog and his engineers wanted a fixed, keyboard-based instrument that a musician could carry to a gig. The Minimoog Model D went on sale in 1970. It was a monophonic synth with three oscillators, a 24 dB ladder filter and pitch and modulation wheels, all in a wooden case with a tilted panel. It stayed in production for over a decade.",
+    s:"Stacked oscillators through that filter produce a fat, warm bass and a singing lead, and both remain benchmarks. The Minimoog featured in funk, jazz-fusion, prog and early electronic pop, from Parliament-Funkadelic to Emerson, Lake & Palmer, and it helped establish the synthesizer as a real band instrument." },
+  { n:"ARP 2600 V", cat:"analog", y:1971, yl:"1971", o:"ARP 2600", m:"ARP Instruments, Massachusetts",
+    a:{t:'box',b:'#6f747c',h:190,sl:[20,'#e0a020'],knobs:[1,8,'#1a1a1a']},
+    f:"Semi-modular · 3 oscillators · ladder filter · built-in spring reverb",
+    h:"Ben Burtt used one for the voice of R2-D2 in Star Wars.",
+    t:"Alan R. Pearlman, an engineer who had made operational amplifiers, founded ARP Instruments in 1969. The 2600, released in 1971, was designed with teaching in mind. It is semi-modular, with signal flow printed on the panel and normalled connections so that it works without patch cords, while cords can override the routing. It has three oscillators, a ladder filter, a sample-and-hold and a spring reverb, and it sold to universities as well as studio players.",
+    s:"It can do everything from thick basses to sharp percussion and strange effects. Sound designer Ben Burtt built R2-D2's voice with a 2600 for Star Wars (1977), and the instrument became a favourite for sound design in film." },
+  { n:"Synthi V", cat:"analog", y:1972, yl:"1972", o:"EMS Synthi AKS", m:"Electronic Music Studios, London",
+    a:{t:'synthi'},
+    f:"3 oscillators · 16 × 16 pin matrix · touch-sensitive keypad",
+    h:"Pink Floyd used the EMS synths on On the Run.",
+    t:"Electronic Music Studios was founded in London in 1969 by Peter Zinovieff, Tristram Cary and David Cockerell. The VCS 3 arrived that year: a compact synthesizer that replaced patch cables with a matrix of pins pushed into a grid. The Synthi AKS of 1972 took the VCS 3's circuitry and packed it into a briefcase with a touch-sensitive keypad, making it a portable instrument for the first time.",
+    s:"It sounds unstable and organic, with distinctive oscillator and filter behaviour. Pink Floyd used EMS synths for the racing sequence on On the Run (1973), and the VCS 3 and its relatives are closely associated with Brian Eno's early work and with British experimental music of the era." },
+  { n:"Buchla Easel V", cat:"analog", y:1973, yl:"1973", o:"Buchla Music Easel", m:"Buchla and Associates, California",
+    a:{t:'easel'},
+    t:"Don Buchla built his first modular systems in Berkeley in the mid-1960s, independently of Moog and to a different philosophy. He deliberately avoided traditional keyboards and the imitation of acoustic instruments, favouring touch-sensitive plates and complex, evolving waveforms. The Music Easel of 1973 was his portable performance instrument, packing a complex oscillator, envelope generators, a sequencer and touch plates into a small case.",
+    s:"The Easel is known for organic, moving sounds and 'West Coast' synthesis, which shapes timbre by folding and warping waveforms rather than by filtering them. It became a tool for experimental composers, and Buchla instruments are associated with artists such as Morton Subotnick and Suzanne Ciani. It is now enjoying a revival." },
+  { n:"SEM V", cat:"analog", y:1974, yl:"1974", o:"Oberheim SEM", m:"Tom Oberheim, California",
+    a:{t:'box',b:'#2b2b2f',h:110,knobs:[2,8,'#d8d4c6']},
+    f:"2 oscillators · 12 dB state-variable filter",
+    t:"Tom Oberheim was building effects for other people's synths in the early 1970s when he decided to make a module that would add polyphony to monosynths like the Minimoog. The result, the Synthesizer Expander Module, or SEM, appeared in 1974. It had two oscillators and a 12 dB state-variable filter that could sweep smoothly between low-pass, notch and high-pass. Players began stacking two or four SEMs with a keyboard as the Two-Voice and Four-Voice systems, the first Oberheim polysynths.",
+    s:"The SEM's clean, sweet character sounds very different from Moog's aggressive ladder filter. It is prized for pads, sweeps and brass, and its circuitry is at the heart of the later OB-X and OB-Xa." },
+  { n:"Prophet-5 V", cat:"analog", y:1978, yl:"1978", o:"Sequential Circuits Prophet-5", m:"Sequential Circuits, California",
+    a:{t:'kbd',b:'#151515',c:'#7a4a25',p:'#26262a',ph:88,knobs:[3,13,'#cfcfd4'],sw:[10,'#d9442b'],w:30},
+    f:"5 voices · 2 oscillators per voice · program memory",
+    t:"Dave Smith co-founded Sequential Circuits in California in 1974. With John Bowen he designed the Prophet-5, released in 1978, the first polyphonic synthesizer to use a microprocessor to store and recall every setting. Before that, polysynths either had few controls or forgot their sounds when you changed a knob. The Prophet-5 offered five voices, two oscillators per voice, a warm analog filter and banks of programs that could be recalled at the press of a button.",
+    s:"Being able to recall sounds made it the first polysynth that touring musicians could rely on, and its wide, brassy tone became the sound of the late 1970s and 1980s. Dave Smith later proposed the standard that became MIDI, in 1981, and it was finalised in 1983 to let instruments from different makers talk to each other." },
+  { n:"CS-80 V", cat:"analog", y:1977, yl:"1977", o:"Yamaha CS-80", m:"Yamaha",
+    a:{t:'kbd',b:'#2a1c14',c:'#6d4630',p:'#131313',ph:92,sl:[22,'#e9e3d0'],w:30},
+    f:"8 voices · 2 layers per voice · 61 keys · polyphonic aftertouch",
+    h:"Vangelis built the Blade Runner score around it.",
+    t:"Yamaha's CS-80 of 1977 was the company's flagship analog synthesizer. It has eight voices, each made of two layers, 61 keys and a weight of roughly 100 kg. Its most important feature is the keyboard: each key responds to both velocity and polyphonic aftertouch, so pressing harder after playing a note shapes that note alone. It is an unusually expressive instrument.",
+    s:"The sound is rich, brassy and emotional, and a ribbon controller adds sweeping pitch bends. Vangelis used it for the score of Blade Runner (1982) and for Chariots of Fire (1981), and his sound is now inseparable from the instrument." },
+  { n:"MS-20 V", cat:"analog", y:1978, yl:"1978", o:"Korg MS-20", m:"Korg, Japan",
+    a:{t:'kbd',b:'#2c3036',p:'#3b4048',ph:98,knobs:[2,10,'#e8d7c0'],pj:14,w:22},
+    f:"37 keys · 2 oscillators · semi-modular · high-pass and low-pass filters",
+    t:"Korg's MS-20, introduced in 1978, was designed as an affordable semi-modular monosynth with a patch panel for rerouting signals. It has two oscillators and a distinctive pair of filters, a high-pass and a low-pass, that can be pushed into self-oscillation. It was part of a family that included the smaller MS-10, the MS-50 module and the SQ-10 sequencer.",
+    s:"Its filters can scream and distort in a way few other synths can, which made it a favourite for aggressive basses, effects and industrial sounds. Korg's reissue, the MS-20 mini, appeared in 2013 and introduced the design to a new generation." },
+  { n:"OB-Xa V", cat:"analog", y:1980, yl:"1980", o:"Oberheim OB-Xa", m:"Oberheim, California",
+    a:{t:'kbd',b:'#141414',c:'#8a5528',p:'#232120',ph:88,knobs:[3,12,'#d8d2c2'],sw:[16,'#d64a2a'],w:30},
+    f:"Up to 8 voices · 2 oscillators per voice · 61 keys",
+    h:"Van Halen's Jump (1983) is built on its sound.",
+    t:"After the SEM, Oberheim introduced the OB-X in 1979, a polysynth built from SEM-style voice circuits with a microprocessor to store patches. The OB-Xa followed in 1980 and refined the design, and it was sold in four-, six- or eight-voice versions. Each voice has two oscillators and the sweet, musical filter of the earlier modules.",
+    s:"The OB-Xa is huge, bright and brassy. It is the sound of the opening of Van Halen's Jump, and its pads and brass stabs are among the most recognisable sounds of early 1980s pop and rock." },
+  { n:"Jup-8 V", cat:"analog", y:1981, yl:"1981", o:"Roland Jupiter-8", m:"Roland, Japan",
+    a:{t:'kbd',b:'#1b1b1d',p:'#2b2b2f',ph:86,sl:[16,'#dcdce0'],sw:[16,'#f0a030'],w:30},
+    f:"8 voices · 2 oscillators per voice · 61 keys · split and layer modes",
+    t:"Roland released the Jupiter-8 in 1981 as the flagship of its analog line, following the Jupiter-4 of 1978. It has eight voices, each with two oscillators, a resonant filter and two envelopes, and it can split the keyboard into two zones or layer two sounds on top of each other. It was expensive and aimed at professional studios and touring players.",
+    s:"The Jupiter-8 is famous for a clean, wide sound, with silky pads and strong brass, and its arpeggiator and layering options give it a lot of body. It remains a favourite for 1980s pop and modern synthwave." },
+  { n:"Acid V", cat:"analog", y:1981, yl:"1981", o:"Roland TB-303", m:"Roland, Japan",
+    a:{t:'tb303'},
+    f:"Monophonic · one oscillator · resonant filter · built-in sequencer",
+    h:"Phuture's Acid Tracks (1987) created the sound of acid house.",
+    t:"Roland designed the TB-303 Bass Line in 1981 as an accompanist for guitarists: a small silver box that played programmable bass lines to go with a drum machine. It has a single oscillator that switches between sawtooth and square, a resonant filter and a sequencer that can add accents and slides between notes. It sold poorly and was discontinued in 1984, and secondhand units soon became cheap.",
+    s:"Cheap secondhand 303s reached Chicago DJs and producers in the mid-1980s, and Phuture's Acid Tracks turned its squelchy, resonant filter sweeps into the sound of acid house. It became a foundation of techno, house and trance, and Roland has since released modern versions." },
+  { n:"Jun-6 V", cat:"analog", y:1982, yl:"1982", o:"Roland Juno-6", m:"Roland, Japan",
+    a:{t:'kbd',b:'#3a3d42',p:'#c2c6cc',ph:68,sl:[16,'#1e9bd7'],sw:[6,'#333'],w:30},
+    f:"6 voices · 1 DCO per voice · 61 keys · built-in chorus",
+    t:"Roland's Juno-6, released in 1982, was a more affordable polysynth than the Jupiter-8. It has six voices and uses a digitally controlled oscillator, or DCO, for stable tuning, a welcome fix for earlier analog oscillators that drifted with temperature. Each voice offers saw, pulse and sub oscillator, plus a high-pass filter, a low-pass filter and a lush built-in chorus. The Juno-60, which added patch memory, followed quickly.",
+    s:"The simple, slider-based panel makes it easy to program, and the chorus gives it a warm, wide sound that suits pads and basses. It is a staple of 1980s pop and of modern synthwave." },
+  { n:"Matrix-12 V", cat:"analog", y:1985, yl:"1985", o:"Oberheim Matrix-12", m:"Oberheim, California",
+    a:{t:'kbd',b:'#141414',p:'#1e1e22',ph:98,lcd:'#c9862a',knobs:[1,6,'#d8d4c6'],sw:[20,'#e2b93a'],w:30},
+    f:"12 voices · 2 oscillators per voice · modulation matrix",
+    t:"Oberheim's Matrix-12 of 1985 was among the most ambitious analog polysynths ever built. It has twelve voices, each with two oscillators and multimode filters, and a modulation matrix that can route many sources to many destinations. It can also split into several parts to play different sounds at once, making it multitimbral. It was large, complicated and expensive.",
+    s:"It is known for very rich, wide pads and complex, evolving sounds. Its programming is deep and its price was high, so few were sold, but it has cult status among sound designers." },
+  { n:"Vocoder V", cat:"analog", y:1939, yl:"1939", o:"Bell Labs vocoder and later music vocoders", m:"Homer Dudley, Bell Labs",
+    a:{t:'box',b:'#2f333a',h:140,sl:[16,'#9ec6e8'],knobs:[1,8,'#d8d4c6']},
+    h:"Kraftwerk made the vocoder part of their sound.",
+    t:"The vocoder began as a telecommunications invention. Homer Dudley, working at Bell Labs in the 1930s, wanted to compress speech so it could be sent more efficiently, and his system analysed a voice into frequency bands and rebuilt it. A related machine, the Voder, which produced synthetic speech from a keyboard, was demonstrated at the 1939 World's Fair. In the 1970s musicians began using vocoders from EMS, Sennheiser and Moog, in which a microphone signal controls the tone of a synth.",
+    s:"Speaking or singing into a vocoder produces the classic talking-synthesizer sound. Kraftwerk used it on Autobahn (1974) and beyond, and it appears in the music of Herbie Hancock and Daft Punk, among many others." },
+
+  // ---------- DIGITAL ----------
+  { n:"Synclavier V", cat:"digital", y:1977, yl:"1977", o:"New England Digital Synclavier", m:"New England Digital, Vermont",
+    a:{t:'ws',sc:'#0d130e',line:'#57d17a',btn:'#e04a3a'},
+    h:"Frank Zappa built much of his later work around it.",
+    t:"The Synclavier began in the mid-1970s at Dartmouth College, where composer Jon Appleton worked with engineers Sydney Alonso and Cameron Jones on a computer-controlled digital synthesizer. Their company, New England Digital, released the first Synclavier in 1977. It started with FM and additive synthesis, and later versions added sampling, hard-disk recording and a velocity-sensitive keyboard. A fully equipped system could cost as much as a house.",
+    s:"The Synclavier has a clean, glassy digital tone, and its sampling of real instruments gave it an unusually realistic edge for its time. Beyond Zappa, it turned up on major pop records and film scores of the 1980s." },
+  { n:"CMI V", cat:"digital", y:1979, yl:"1979", o:"Fairlight CMI", m:"Fairlight, Australia",
+    a:{t:'ws',sc:'#0a0a0c',line:'#e8e8e8',btn:'#c7c1b0'},
+    f:"8-bit sampling · light pen and monitor · Page R sequencer (Series II)",
+    h:"Kate Bush and Peter Gabriel were early adopters.",
+    t:"Peter Vogel and Kim Ryrie, two Sydney engineers, began building digital synthesizers in the late 1970s, and in 1979 their company Fairlight introduced the Computer Musical Instrument, or CMI. It combined a computer, a monitor, a light pen and a keyboard, and it could record and play back real sounds, making it one of the first commercial samplers. Waveforms could be edited by drawing on the screen. The Series II of 1982 added a sequencer called Page R.",
+    s:"Its grainy 8-bit samples gave a crunchy, distinctive quality, from orchestra hits to breathy voices. Its sound is all over early 1980s records, including Herbie Hancock's Rockit." },
+  { n:"DX7 V", cat:"digital", y:1983, yl:"1983", o:"Yamaha DX7", m:"Yamaha",
+    a:{t:'kbd',b:'#111111',p:'#1c1c1e',ph:82,lcd:'#8fbf6a',sl:[2,'#c73a3a'],sw:[24,'#cfcfd2'],w:30},
+    f:"61 keys · 16 voices · 6 operators · 32 algorithms",
+    t:"In the late 1960s John Chowning at Stanford discovered that frequency modulation, familiar from radio, could generate rich, complex musical tones. Yamaha licensed the technique in the 1970s and spent years developing it. The DX7, released in 1983, packed FM synthesis into an affordable 61-key keyboard with six operators per voice, 32 algorithms and 16-voice polyphony, and it became one of the first digital synthesizers to sell in huge numbers.",
+    s:"FM excels at bells, tines, electric pianos and glassy basses that subtractive synths struggle with, and the DX7's electric piano and bass presets are on countless 1980s records. Its menu-driven programming was famously difficult, so many players stuck with presets, which is one reason its sound is so recognisable." },
+  { n:"CZ V", cat:"digital", y:1984, yl:"1984", o:"Casio CZ-101", m:"Casio, Japan",
+    a:{t:'kbd',b:'#1c1c20',p:'#2b2b32',ph:70,lcd:'#8fbf6a',sw:[16,'#c02a2a'],w:26},
+    f:"49 mini keys · 8 voices · phase distortion synthesis",
+    t:"Casio, known for calculators and keyboards, entered the synth market in 1984 with the CZ-101. It used phase distortion synthesis, Casio's own method, which shapes a sine wave by bending its phase to give filter-like results. The CZ-101 had 49 mini keys, eight voices and a very low price, and it could run on batteries. Larger CZ models followed, and together they made programmable synths affordable for home musicians.",
+    s:"Phase distortion gives a bright, thin, slightly digital sound that works well for plucks, bells, brass and resonant sweeps. It later found favour with electronic producers who valued its distinctive character." },
+  { n:"Emulator II V", cat:"digital", y:1984, yl:"1984", o:"E-mu Emulator II", m:"E-mu Systems, California",
+    a:{t:'kbd',b:'#1b1b1d',p:'#2a2a2e',ph:88,lcd:'#7fd0e0',drive:true,sw:[12,'#cc3333'],w:30},
+    f:"8 voices · sampler with analog filters · built-in sequencer and disk drive",
+    t:"E-mu Systems, based in Scotts Valley, California, launched the Emulator in 1981 as a more affordable sampler than the Fairlight or the Synclavier. The Emulator II arrived in 1984 with more memory, better sound quality, eight voices, a built-in sequencer and a disk drive. It came in a keyboard package that looked like a synthesizer, and it sold to studios and touring musicians alike.",
+    s:"Its crunchy, slightly gritty samples, including strings, choirs and drum hits, characterise many 1980s records. Analog filters on each voice gave the sampled sound a warmth that was more musical than the clinical digital sound of some rivals." },
+  { n:"Prophet-VS V", cat:"digital", y:1986, yl:"1986", o:"Sequential Prophet VS", m:"Sequential Circuits, California",
+    a:{t:'kbd',b:'#141414',p:'#1b1b1d',ph:92,lcd:'#4a7ad0',joy:true,knobs:[1,8,'#d0d0d4'],sw:[24,'#cfcfd2'],w:30},
+    f:"8 voices · 4 oscillators per voice · vector joystick",
+    t:"Sequential Circuits introduced the Prophet VS in 1986 as its first fully digital polysynth, built around a new kind of synthesis. Each of its eight voices had four oscillators playing digital waveforms, and a joystick let the player blend between them in real time, a technique called vector synthesis. Joystick movements could be recorded as an envelope so that sounds evolved on their own. The company was sold to Yamaha in 1987, and the VS was one of the last instruments it produced.",
+    s:"The VS's glassy, shifting pads and hybrid digital tone are quite unlike an analog polysynth. Its vector idea influenced Yamaha's SY22 and TG33 and Korg's Wavestation, which was designed by former Sequential engineers." },
+  { n:"SQ80 V", cat:"digital", y:1987, yl:"1987", o:"Ensoniq SQ-80", m:"Ensoniq, Pennsylvania",
+    a:{t:'kbd',b:'#141414',p:'#28282c',ph:80,lcd:'#e0a838',sl:[2,'#dddddd'],sw:[20,'#e8e8e8'],w:30},
+    f:"8 voices · 3 oscillators per voice · 8-track sequencer · disk drive",
+    t:"Ensoniq was founded in Pennsylvania in 1982 by former Commodore and MOS Technology engineers, including the designer of the Commodore 64's sound chip. The company released the ESQ-1 in 1986 and the SQ-80 in 1987. The SQ-80 offered eight voices with three oscillators each, using wavetable sound sources and analog-style filters, plus an eight-track sequencer and a disk drive, all in a single keyboard.",
+    s:"The SQ-80's mix of wavetable oscillators and filters gives it a gritty, punchy sound. It was a versatile workhorse for 1980s and early 1990s pop and rock, and its sequencer made it a self-contained songwriting tool." },
+
+  // ---------- ARTURIA'S OWN ----------
+  { n:"Pigments", cat:"own", y:2017, yl:"2017", o:"Arturia Pigments (no hardware original)", m:"Arturia",
+    a:{t:'ui',col:'#e35d6a',mode:'wt'},
+    t:"Arturia was founded in Grenoble, France, in 1999 by Frédéric Brun and Gilles Pommereuil, and its early fame came from recreating vintage synths in software. Pigments, launched in 2017, took a different route. It is a synth designed from scratch, combining virtual analog and wavetable engines, a sample engine and a deep modulation system that draws its connections visually. New engines, effects and sequencers have been added through regular updates.",
+    s:"Pigments is known for its colourful interface and wide sound range, from clean pads to noisy, evolving textures. It is a good example of Arturia moving from recreating the past to designing new instruments." },
+  { n:"MiniFreak V", cat:"own", y:2022, yl:"2022", o:"Arturia MiniFreak", m:"Arturia",
+    a:{t:'kbd',b:'#d8d4ca',p:'#efece4',ph:96,knobs:[3,8,'#2a2a2a'],sw:[8,'#e06a2a'],w:24},
+    f:"6 voices · digital oscillators · analog filter · sequencer",
+    t:"The MiniFreak, released by Arturia in 2022, is a six-voice hybrid synthesizer that pairs digital oscillators with an analog filter. It has a large set of digital sound engines, a deep modulation system and a sequencer, and it is built on the ideas of the smaller MicroFreak. The V version, released in 2023, brings the instrument into software.",
+    s:"The hybrid design gives it a wide range, from warm analog-style basses to bright digital textures. It shows how Arturia has moved from recreating vintage instruments to designing its own." },
+  { n:"Pure Lofi", cat:"own", y:2025, yl:"New", o:"No hardware original", m:"Arturia",
+    a:{t:'ui',col:'#e0a14a',mode:'lofi'},
+    t:"Pure Lofi is one of Arturia's newer software instruments. It combines acoustic samples with digital oscillators and vintage sampler emulation to create a lo-fi palette, and it has no single hardware original. Its design draws on the aesthetic of tape, worn vinyl and early samplers, which lo-fi hip-hop and chillhop producers have embraced.",
+    s:"The sound is warm, dusty and slightly unstable, with character coming from the imperfections that older technology introduced. It is aimed at producers who want that texture without processing every sound by hand." },
+  { n:"Analog Lab", cat:"own", y:2100, yl:"n/a", small:true, o:"Preset browser (no hardware original)", m:"Arturia",
+    a:{t:'ui',col:'#6db3e8',mode:'list'},
+    t:"Analog Lab is not an emulation of any vintage instrument. It is a workstation that gathers presets from Arturia's instruments into a single browser, so you can audition sounds from across the collection without opening each one individually. It is designed to be played from a keyboard controller.",
+    s:"For many people it is the quickest way to explore what the collection can do: search by instrument, character or type, tweak a few main controls, and play. It suits live use and quick sketching." }
+];
+
+// ---------- illustrations ----------
+const R=(x,y,w,h,f,rx=0,s='')=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx}" fill="${f}"${s?` stroke="${s}" stroke-width="1"`:''}/>`;
+const Ci=(x,y,r,f,s='')=>`<circle cx="${x}" cy="${y}" r="${r}" fill="${f}"${s?` stroke="${s}" stroke-width="1"`:''}/>`;
+const Pa=(d,f,s='',sw=1)=>`<path d="${d}" fill="${f}"${s?` stroke="${s}" stroke-width="${sw}"`:''}/>`;
+const Li=(x1,y1,x2,y2,s,sw=1)=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${s}" stroke-width="${sw}" stroke-linecap="round"/>`;
+const pr=i=>((i*53+17)%100)/100;
+const shadow=(y=284,rx=270)=>`<ellipse cx="320" cy="${y}" rx="${rx}" ry="8" fill="#000" opacity=".15"/>`;
+
+function keys(x,y,w,h,n,rev){
+  const kw=w/n, wc=rev?'#1c1c1c':'#f3f0e6', bc=rev?'#f3f0e6':'#151515'; let s='';
+  for(let i=0;i<n;i++) s+=R(x+i*kw,y,kw-0.8,h,wc,1.5);
+  for(let i=0;i<n-1;i++) if([0,1,3,4,5].includes(i%7)) s+=R(x+(i+1)*kw-kw*0.3,y,kw*0.6,h*0.62,bc,1.5);
+  return s;
+}
+function knobs(x,y,w,h,rows,cols,col){
+  let s=''; for(let r=0;r<rows;r++) for(let c=0;c<cols;c++){
+    const cx=x+(c+0.5)*w/cols, cy=y+(r+0.5)*h/rows;
+    s+=Ci(cx,cy,5.5,col,'#00000066')+Li(cx,cy,cx,cy-5,'#000000aa',1.5)+R(cx-6,cy+8.5,12,1.5,'#ffffff44');
+  } return s;
+}
+function sliders(x,y,w,h,n,col){
+  let s=''; for(let i=0;i<n;i++){ const sx=x+(i+0.5)*w/n;
+    s+=R(sx-1.5,y,3,h,'#000000',1)+R(sx-5,y+pr(i)*(h-8),10,7,col,1.5); } return s;
+}
+function swt(x,y,w,n,col){
+  let s=''; for(let i=0;i<n;i++) s+=R(x+i*(w/n)+1,y,w/n-3,8,col,1.5); return s;
+}
+function lcd(x,y,w,h,col){
+  return R(x,y,w,h,'#0a0a0a',3)+R(x+4,y+4,w-8,h-8,col,2)+R(x+8,y+9,w-24,3,'#00000055')+R(x+8,y+16,w-34,3,'#00000055');
+}
+function jacks(x,y,n){ let s=''; for(let i=0;i<n;i++) s+=Ci(x+i*16,y,4,'#111','#888'); return s; }
+
+function kbd(a){
+  const bx=24,by=64,bw=592,bh=200,cw=a.c?24:6,ph=a.ph||0;
+  let s=shadow(a.legs?296:282);
+  if(a.legs) s+=Li(130,by+bh,100,292,'#9a9da3',6)+Li(510,by+bh,540,292,'#9a9da3',6)+Li(150,by+bh,500,292,'#9a9da3',4)+Li(490,by+bh,140,292,'#9a9da3',4);
+  s+=R(bx,by,bw,bh,a.b,10);
+  if(a.c) s+=R(bx,by,cw,bh,a.c,8)+R(bx+bw-cw,by,cw,bh,a.c,8);
+  const px=bx+cw+6, pw=bw-2*cw-12;
+  if(ph){
+    s+=R(px,by+8,pw,ph,a.p,4);
+    const ix=px+12, iy=by+16, ih=ph-(a.sw?28:18); let iw=pw-24;
+    if(a.lcd){ s+=lcd(px+pw-100,iy,88,Math.min(36,ih),a.lcd); iw-=108; if(a.drive) s+=R(px+pw-100,iy+44,88,7,'#000',2); }
+    if(a.joy) s+=Ci(px+pw-56,by+8+ph-24,9,'#cfcfd2','#000')+Ci(px+pw-56,by+8+ph-24,4,'#222');
+    if(a.knobs&&a.sl){ const kw=iw*0.58; s+=knobs(ix,iy,kw,ih,...a.knobs)+sliders(ix+kw+12,iy,iw-kw-12,ih,...a.sl); }
+    else if(a.knobs) s+=knobs(ix,iy,iw,ih,...a.knobs);
+    else if(a.sl) s+=sliders(ix,iy,iw,ih,...a.sl);
+    if(a.sw) s+=swt(ix,by+8+ph-16,iw,...a.sw);
+    if(a.pj) s+=jacks(ix+4,by+8+ph-16,a.pj);
+  }
+  s+=keys(bx+cw+6,by+ph+22,bw-2*cw-12,bh-ph-34,a.w||28,a.rev);
+  return s;
+}
+function grand(a){
+  const sc=a.small?0.88:1, b=a.b;
+  let s=shadow(288,260)+`<g transform="translate(${320*(1-sc)},${300*(1-sc)}) scale(${sc})">`;
+  s+=Pa('M150 150 L562 150 L548 100 L170 58 Z','#232327','#00000055')+Li(170,60,170,150,'#555',3);
+  s+=R(110,150,462,38,b,8)+Li(120,157,560,157,'#ffffff30',2);
+  s+=R(62,160,70,14,'#f3f0e6',2)+R(62,150,70,10,b,2);
+  for(let i=0;i<7;i++) s+=R(70+i*9,160,5,9,'#111',1);
+  s+=R(150,186,13,86,b,3)+R(500,186,13,86,b,3)+R(84,186,13,86,b,3)+R(118,226,22,6,'#8d8f95',2)+R(122,232,4,30,'#8d8f95',1);
+  return s+'</g>';
+}
+function modular(){
+  let s=shadow(288)+R(30,42,580,190,'#6b4428',8);
+  const cols=[42,150,262,372,470,598];
+  for(let r=0;r<3;r++){ const y=52+r*58; s+=R(42,y,556,52,'#2a2a2e',3);
+    for(let c=0;c<5;c++){ const x0=cols[c], x1=cols[c+1]; if(c>0) s+=Li(x0,y,x0,y+52,'#111',2);
+      const n=2+((r+c)%3); for(let k=0;k<n;k++) s+=Ci(x0+(k+0.5)*(x1-x0)/n,y+18,6,'#dcdce0','#000')+Li(x0+(k+0.5)*(x1-x0)/n,y+18,x0+(k+0.5)*(x1-x0)/n,y+12,'#000',1.5);
+      for(let j=0;j<3;j++) s+=Ci(x0+14+j*14,y+42,3.5,'#111','#999'); } }
+  s+=Pa('M120 76 C170 130 250 20 330 90 S480 150 540 110','none','#e0a020',3);
+  s+=Pa('M300 176 C340 200 420 150 470 190','none','#d9442b',3);
+  s+=keys(70,240,500,44,30,false);
+  return s;
+}
+function tb303(){
+  let s=shadow(262,230)+R(70,80,500,160,'#c6c9cd',8)+R(70,80,500,28,'#2a2a2a',8)+R(90,90,120,8,'#e04a3a',2);
+  for(let i=0;i<6;i++) s+=Ci(120+i*76,150,15,'#2a2a2a','#000')+Li(120+i*76,150,120+i*76,137,'#e8e8e8',2)+R(120+i*76-18,172,36,2,'#00000055');
+  for(let i=0;i<13;i++) s+=R(96+i*35,196,26,20,[1,3,6,8,10].includes(i)?'#2a2a2a':'#ececec',2,'#0004');
+  for(let i=0;i<16;i++) s+=Ci(98+i*29,228,2.5,i%4==0?'#e04a3a':'#666');
+  return s;
+}
+function synthi(){
+  let s=shadow(288)+R(40,44,560,226,'#2b2b2f',12)+R(40,44,560,14,'#3b3b40',12);
+  s+=R(60,70,150,150,'#111',4);
+  for(let r=0;r<16;r++) for(let c=0;c<16;c++){ const on=(r*7+c*13)%17===0; s+=Ci(70+c*8.6,79+r*8.6,2.3,on?'#e04a3a':'#555'); }
+  s+=knobs(232,72,350,90,3,9,'#d8d4c6');
+  s+=R(232,178,350,60,'#e8e8e8',4)+swt(238,208,338,12,'#333')+Li(238,190,570,190,'#00000033',1);
+  s+=Ci(90,246,6,'#888')+R(60,236,150,4,'#444');
+  return s;
+}
+function easel(){
+  let s=shadow(288)+R(30,50,580,220,'#7a5230',10);
+  s+=R(44,62,552,66,'#b7b8bc',4)+knobs(56,68,528,54,2,14,'#2a2a2a');
+  s+=R(44,136,552,56,'#b7b8bc',4)+sliders(58,142,524,44,18,'#2a2a2a')+jacks(60,186,10);
+  s+=R(44,200,552,58,'#2e2e32',4);
+  for(let i=0;i<12;i++) s+=R(54+i*44,210,36,36,['#c7402d','#e08a2a','#e0c72a','#4aa860','#3a8ac8','#8a58c0'][i%6],4);
+  return s;
+}
+function box(a){
+  const h=a.h||120, y=(300-h)/2, x=50, w=540;
+  let s=shadow(y+h+12,250)+R(x,y,w,h,a.b,5)+R(x-14,y,14,h,'#8d9096',2)+R(x+w,y,14,h,'#8d9096',2);
+  s+=Ci(x-7,y+10,3,'#333')+Ci(x-7,y+h-10,3,'#333')+Ci(x+w+7,y+10,3,'#333')+Ci(x+w+7,y+h-10,3,'#333');
+  const ix=x+18, iw=w-36; let iy=y+16, ih=h-32;
+  if(a.knobs&&a.sl){ const kh=Math.min(34,ih*0.3); s+=knobs(ix,iy,iw,kh,...a.knobs)+sliders(ix,iy+kh+10,iw,ih-kh-10,...a.sl); }
+  else if(a.knobs) s+=knobs(ix,iy,iw,ih,...a.knobs);
+  else if(a.sl) s+=sliders(ix,iy,iw,ih,...a.sl);
+  return s;
+}
+function ws(a){
+  let s=shadow(288)+R(150,26,340,164,'#d8d3c6',10)+R(168,42,304,130,a.sc,4);
+  for(let i=0;i<7;i++) s+=Li(182,58+i*15,182+60+((i*47)%180),58+i*15,a.line,2);
+  s+=Pa('M300 150 Q330 90 360 130 T430 120','none',a.line,2);
+  s+=R(90,206,460,72,'#2a2a2e',6)+swt(104,214,432,20,a.btn)+keys(104,232,432,40,26,false);
+  return s;
+}
+function organ(){
+  let s=shadow(288)+R(56,52,528,214,'#7a4a25',6)+R(66,62,508,48,'#2a2a2a',3);
+  for(let i=0;i<18;i++) s+=R(76+i*24+(i>8?18:0),68,10,36,i%3==0?'#f0f0f0':i%3==1?'#151515':'#8a5a2e',1.5);
+  for(let i=0;i<8;i++) s+=R(76+i*4+430,70,3,10,'#e6c34a');
+  s+=keys(66,118,508,64,30,false)+keys(66,188,508,64,30,false);
+  s+=R(96,266,14,24,'#5a3418',2)+R(530,266,14,24,'#5a3418',2);
+  return s;
+}
+function mello(){
+  let s=shadow(288)+R(30,44,120,230,'#7a4a25',6)+R(490,44,120,230,'#7a4a25',6)+R(150,140,340,130,'#5a3418',4);
+  for(const cx of [90,550]){ s+=Ci(cx,110,34,'#1c1c1e','#000')+Ci(cx,110,12,'#8d8f95')+Ci(cx,200,26,'#1c1c1e','#000')+Ci(cx,200,9,'#8d8f95'); }
+  s+=R(166,152,308,18,'#2a2a2a',3)+swt(172,156,296,10,'#e8e2cf')+keys(172,178,296,78,17,false);
+  return s;
+}
+function ui(a){
+  let s=shadow(276,250)+R(50,30,540,232,'#1b1e26',12)+Ci(70,46,4,'#e0605a')+Ci(84,46,4,'#e0b84a')+Ci(98,46,4,'#5ac06a');
+  s+=R(74,66,330,120,'#0f1116',8);
+  if(a.mode==='wt'){ for(let k=0;k<5;k++) s+=Pa(`M84 ${170-k*18} C130 ${100-k*8} 170 ${190-k*14} 220 ${130-k*10} S320 ${80+k*12} 394 ${140-k*12}`,'none',a.col,2).replace('<path',`<path opacity="${0.25+k*0.15}"`); }
+  else if(a.mode==='lofi'){ s+=Ci(170,126,48,'#111','#333')+Ci(170,126,16,a.col)+Ci(170,126,3,'#111'); for(let i=0;i<40;i++) s+=Ci(230+pr(i)*160,76+pr(i+9)*100,1.2,a.col).replace('<circle',`<circle opacity="${0.3+pr(i)*0.5}"`); s+=Pa('M236 130 Q270 90 300 130 T366 130','none',a.col,2); }
+  else { for(let i=0;i<7;i++) s+=R(84,76+i*15,310,11,i===2?a.col:'#242833',2)+R(90,79+i*15,60+((i*37)%120),4,i===2?'#0f1116':'#4a5060',1); }
+  s+=knobs(418,68,158,54,2,3,a.col)+knobs(418,132,158,54,2,3,'#d8dce6');
+  s+=keys(74,198,502,52,32,false);
+  return s;
+}
+const W=(x,y,w,h,c)=>R(x,y,w,h,c,6)+[1,2,3,4,5].map(i=>Li(x+3,y+h*i/6,x+w-3,y+h*i/6+(i%2?2:-2),'#00000030',1)).join('');
+const wheels=(x,y,h)=>R(x,y,13,h,'#0c0c0c',3)+R(x+4,y+5,3,h-10,'#8a8a8a',1)+R(x+18,y,13,h*0.7,'#0c0c0c',3)+R(x+22,y+5,3,h*0.7-10,'#8a8a8a',1);
+function K(o){
+  const bx=24,by=o.by||56,bw=592,bh=o.bh||218,cw=o.c?26:6;
+  let s=shadow(by+bh+16)+R(bx,by,bw,bh,o.b,10);
+  if(o.c) s+=W(bx,by,cw,bh,o.c)+W(bx+bw-cw,by,cw,bh,o.c);
+  const px=bx+cw+4,pw=bw-2*cw-8,py=by+6,ph=o.ph;
+  s+=R(px,py,pw,ph,o.p,4)+o.draw(px,py,pw,ph);
+  const ky=py+ph+(o.gap||12),kh=by+bh-ky-10,wh=o.wh||0;
+  if(wh) s+=wheels(px+4,ky+2,kh-8);
+  return s+keys(px+wh,ky,pw-wh,kh,o.n||30,o.rev);
+}
+const OVR={
+ "Mini V":()=>K({b:'#241609',c:'#8a5528',p:'#17171a',ph:84,wh:36,n:25,draw:(x,y,w,h)=>knobs(x+8,y+4,w-16,h-30,2,15,'#e8e6de')+swt(x+10,y+h-20,w*0.45,9,'#e8e6de')+Ci(x+w-40,y+h-14,6,'#d9442b')}),
+ "ARP 2600 V":()=>K({b:'#4a4d52',p:'#74787f',ph:150,by:40,bh:240,n:18,draw:(x,y,w,h)=>R(x+8,y+8,76,h-16,'#16161a',3)+[...Array(12)].map((_,i)=>Li(x+14,y+16+i*10,x+78,y+16+i*10,'#444',2)).join('')+sliders(x+96,y+10,w-106,58,21,'#e0a020')+knobs(x+96,y+76,w-106,32,1,9,'#1a1a1a')+jacks(x+100,y+h-18,14)}),
+ "SEM V":()=>shadow(268,230)+R(150,28,340,232,'#26262a',6)+R(150,28,12,232,'#8d9096')+R(478,28,12,232,'#8d9096')+R(172,40,296,14,'#3a3a40',3)+knobs(172,64,296,76,2,5,'#d8d4c6')+sliders(184,150,272,62,5,'#cfcfd4')+jacks(184,238,4),
+ "Prophet-5 V":()=>K({b:'#121214',c:'#7a4a25',p:'#1b1b1e',ph:96,wh:36,n:30,draw:(x,y,w,h)=>knobs(x+8,y+6,w*0.68,h-12,3,12,'#cfcfd4')+[10,30,50,70].map(d=>swt(x+w*0.72,y+d,w*0.25,5,'#d9442b')).join('')}),
+ "CS-80 V":()=>K({b:'#3a2314',c:'#6d4630',p:'#141414',ph:92,by:50,bh:230,n:36,draw:(x,y,w,h)=>sliders(x+10,y+8,w*0.44,h-24,16,'#e9e3d0')+sliders(x+w*0.5,y+8,w*0.46,h-24,16,'#e9e3d0')+R(x+10,y+h-12,w-20,5,'#e9e3d0',2)}),
+ "MS-20 V":()=>K({b:'#23262b',p:'#2c3036',ph:118,by:44,bh:226,n:21,draw:(x,y,w,h)=>knobs(x+10,y+8,w*0.55,h-16,3,6,'#e8d7c0')+R(x+w*0.62,y+10,w*0.34,h-20,'#1a1c20',3)+jacks(x+w*0.64,y+26,8)+jacks(x+w*0.64,y+56,8)+jacks(x+w*0.64,y+86,8)}),
+ "OB-Xa V":()=>K({b:'#111',c:'#8a5528',p:'#1d1b1a',ph:92,wh:36,n:30,draw:(x,y,w,h)=>knobs(x+8,y+6,w-16,46,2,16,'#d8d2c2')+swt(x+10,y+h-34,w-20,16,'#d64a2a')+swt(x+10,y+h-20,w-20,16,'#d64a2a')}),
+ "Jup-8 V":()=>K({b:'#18181a',p:'#26262a',ph:100,wh:36,n:30,draw:(x,y,w,h)=>knobs(x+8,y+6,w-16,24,1,12,'#cfcfd4')+sliders(x+10,y+36,w-20,34,22,'#e8e8ec')+swt(x+10,y+h-16,w*0.5,10,'#f0a030')+swt(x+w*0.5+14,y+h-16,w*0.46,10,'#3a8ac8')}),
+ "Jun-6 V":()=>K({b:'#26272b',p:'#b6bbc2',ph:78,wh:36,n:30,draw:(x,y,w,h)=>sliders(x+10,y+6,w*0.3,h-24,5,'#e8e8e8')+sliders(x+w*0.34,y+6,w*0.26,h-24,4,'#3aa0e0')+sliders(x+w*0.62,y+6,w*0.2,h-24,3,'#e8e8e8')+sliders(x+w*0.84,y+6,w*0.14,h-24,2,'#e0503a')+swt(x+10,y+h-14,w-20,14,'#333')}),
+ "Matrix-12 V":()=>K({b:'#121212',p:'#1b1b1e',ph:106,wh:36,n:30,draw:(x,y,w,h)=>lcd(x+10,y+8,110,34,'#c9862a')+lcd(x+130,y+8,110,34,'#c9862a')+knobs(x+256,y+6,w-266,40,2,5,'#d8d4c6')+swt(x+10,y+58,w-20,24,'#e2b93a')+swt(x+10,y+76,w-20,24,'#cfcfd2')}),
+ "DX7 V":()=>K({b:'#101010',p:'#1a1a1c',ph:68,wh:36,n:30,draw:(x,y,w,h)=>sliders(x+10,y+8,56,h-16,2,'#c73a3a')+lcd(x+90,y+8,150,34,'#8fbf6a')+swt(x+260,y+10,w-270,10,'#cfcfd2')+swt(x+260,y+26,w-270,10,'#cfcfd2')+swt(x+90,y+50,w-100,16,'#cfcfd2')}),
+ "CZ V":()=>K({b:'#1d1d22',p:'#2b2b32',ph:64,n:26,draw:(x,y,w,h)=>lcd(x+10,y+8,120,32,'#8fbf6a')+swt(x+150,y+10,w-160,12,'#c02a2a')+swt(x+150,y+28,w-160,12,'#cfcfd2')}),
+ "Emulator II V":()=>K({b:'#1b1b1d',p:'#2a2a2e',ph:90,wh:36,n:30,draw:(x,y,w,h)=>lcd(x+10,y+8,120,36,'#7fd0e0')+R(x+150,y+10,110,10,'#000',2)+swt(x+280,y+10,w-290,14,'#cc3333')+swt(x+280,y+28,w-290,14,'#cfcfd2')+sliders(x+10,y+54,w-20,h-62,10,'#cfcfd2')}),
+ "Prophet-VS V":()=>K({b:'#131313',p:'#1b1b1d',ph:94,wh:36,n:30,draw:(x,y,w,h)=>lcd(x+10,y+8,120,36,'#4a7ad0')+Ci(x+180,y+h/2,28,'#26262a','#555')+Ci(x+180,y+h/2,9,'#cfcfd2')+knobs(x+230,y+6,w-240,40,1,8,'#d0d0d4')+swt(x+10,y+h-26,w-20,24,'#cfcfd2')}),
+ "SQ80 V":()=>K({b:'#141414',p:'#28282c',ph:76,wh:36,n:30,draw:(x,y,w,h)=>lcd(x+10,y+8,110,34,'#e0a838')+swt(x+220,y+10,w-230,14,'#e8e8e8')+swt(x+220,y+28,w-230,14,'#e8e8e8')+sliders(x+10,y+48,w*0.35,24,6,'#dddddd')}),
+ "MiniFreak V":()=>K({b:'#cfcbc0',p:'#ece9e0',ph:88,n:28,draw:(x,y,w,h)=>knobs(x+10,y+8,w*0.55,h-30,2,8,'#2a2a2a')+lcd(x+w*0.62,y+8,w*0.34,34,'#3a3a3a')+swt(x+10,y+h-16,w-20,16,'#e06a2a')})
+};
+const ART={kbd,grand,modular,tb303,synthi,easel,box,ws,organ,mello,ui};
+function art(d){ return `<svg viewBox="0 0 640 300" role="img" aria-label="Illustration of the ${d.o}">${(OVR[d.n]||ART[d.a.t])(d.a)}</svg>`; }
+
+// ---------- app ----------
+const state = { cat: "all", sort: "type", q: "", open: new Set() };
+const $ = s => document.querySelector(s);
+const list = $("#list"), countEl = $("#count");
+const idOf = d => "i-" + d.n.replace(/[^a-z0-9]/gi, "").toLowerCase();
+
+const chipsEl = $("#chips");
+const chipDefs = [["all","All"], ...Object.entries(CATS).map(([k,v]) => [k, v.label])];
+chipsEl.innerHTML = chipDefs.map(([k,l]) => `<button type="button" class="chip" data-cat="${k}" aria-pressed="${k==='all'}">${l}</button>`).join("");
+
+function bodyHTML(d) {
+  const q = encodeURIComponent(d.o.replace(/\(.*?\)/g,'') + " " + d.m + " photo");
+  return `<figure class="fig">${art(d)}<figcaption>Illustration of the original, not a photograph.</figcaption></figure>
+    <p>${d.t}</p>
+    <p>${d.s}</p>
+    ${d.f ? `<p class="facts">${d.f}</p>` : ''}
+    ${d.h ? `<p class="heard">${d.h}</p>` : ''}
+    <p class="links"><a href="https://www.google.com/search?tbm=isch&q=${q}" target="_blank" rel="noopener noreferrer">Search for photos of the original</a></p>`;
+}
+
+function itemHTML(d) {
+  const id = idOf(d), open = state.open.has(id);
+  return `<article class="item" data-cat="${d.cat}">
+    <button class="head" aria-expanded="${open}" aria-controls="${id}" data-id="${id}">
+      <span class="year${d.small || d.yl.length > 5 ? ' small' : ''}">${d.yl}</span>
+      <span><span class="name">${d.n}</span><span class="orig">${d.o} · ${d.m}</span></span>
+      <span class="chev" aria-hidden="true"></span>
+    </button>
+    <div class="body${open ? ' open' : ''}" id="${id}" role="region" aria-label="${d.n} history"><div>${open ? bodyHTML(d) : ''}</div></div>
+  </article>`;
+}
+
+function render() {
+  const q = state.q.trim().toLowerCase();
+  let items = DATA.filter(d =>
+    (state.cat === "all" || d.cat === state.cat) &&
+    (!q || (d.n + " " + d.o + " " + d.m + " " + d.yl + " " + d.t + " " + d.s).toLowerCase().includes(q))
+  );
+  countEl.textContent = items.length === 1 ? "1 instrument" : items.length + " instruments";
+  if (!items.length) { list.innerHTML = `<p class="empty">Nothing matches that search. Clear it or pick a different group.</p>`; return; }
+  if (state.sort === "year") {
+    items = items.slice().sort((a,b) => a.y - b.y);
+    list.innerHTML = items.map(itemHTML).join("");
+  } else {
+    let html = "";
+    for (const [k, c] of Object.entries(CATS)) {
+      const g = items.filter(d => d.cat === k).sort((a,b) => a.y - b.y);
+      if (!g.length) continue;
+      html += `<h2 class="group-title">${c.label}</h2><p class="group-note">${c.note}</p>` + g.map(itemHTML).join("");
+    }
+    list.innerHTML = html;
+  }
+}
+
+list.addEventListener("click", e => {
+  const btn = e.target.closest(".head");
+  if (!btn) return;
+  const id = btn.dataset.id, body = document.getElementById(id);
+  const willOpen = !body.classList.contains("open");
+  if (willOpen && !body.firstElementChild.firstElementChild) {
+    body.firstElementChild.innerHTML = bodyHTML(DATA.find(d => idOf(d) === id));
+  }
+  body.classList.toggle("open", willOpen);
+  btn.setAttribute("aria-expanded", willOpen);
+  willOpen ? state.open.add(id) : state.open.delete(id);
+});
+chipsEl.addEventListener("click", e => {
+  const b = e.target.closest(".chip"); if (!b) return;
+  state.cat = b.dataset.cat;
+  chipsEl.querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", c === b));
+  render();
+});
+$("#sort").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  state.sort = b.dataset.sort;
+  $("#sort").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b));
+  render();
+});
+$("#q").addEventListener("input", e => { state.q = e.target.value; render(); });
+render();
+</script>
+</body>
+</html>
